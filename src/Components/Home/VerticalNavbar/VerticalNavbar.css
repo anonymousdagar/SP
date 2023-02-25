@@ -1,0 +1,22 @@
+.sidebar {
+    background-color: #f0f0f0;
+    width: 250px;
+    padding: 20px;
+  }
+  
+  .sidebar-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .sidebar-items{
+    padding-bottom: 5px;
+  }
+  .sidebar-button{
+    width: -webkit-fill-available;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: cursive;
+    font-size: large;
+    background-color: blanchedalmond;
+  }

@@ -1,0 +1,19 @@
+  .content {
+    background-color: #f0f0f0;
+    flex-grow: 1;
+    padding-top: 20px;
+  }
+  .content-box {
+    background-color: blanchedalmond;
+    padding: 0px;
+    border: solid;
+    border-radius: 20px;
+    height: 95%;
+    margin-right: 10px;
+  }
+  .content-wraper{
+    margin-left: 15px;
+  }
+  .content-header{
+    display: inline-flex;
+  }
