@@ -1,35 +1,58 @@
-import { Fragment, useContext, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useState, useMemo } from "react";
 import AuthContext from "../../../../Utils/AuthContext";
 import PlantForm from "../../../Forms/PlantsForm/PlantsForm";
-import Table from "../../../TableComponent/TableComponent";
+import TableNew from "../../../TableComponent/TableComponent";
+import { set,ref, onValue } from "firebase/database";
+import { db } from "../../../../Utils/firebase"; 
 
-const PlantContainer = () => {
+const PlantContainer = (props) => {
   const ctx =useContext(AuthContext);
   const [plantData,setPlantData]=useState([]);
-  const fetchData = async () => {
-    const response = await fetch(
-      "https://sptransport-9abec-default-rtdb.asia-southeast1.firebasedatabase.app/Plants.json"
-    );
-    const json = await response.json();
-    const values = Object.values(json);
-    const keys = Object.keys(json);
-    const newData = values.map((value,index) => {return{...value,id:keys[index]}})
-    setPlantData(newData);
+  const fetchData=(collection)=>{
+    const newData=[];
+    onValue(ref(db,collection),snapshot=>{
+      const data = snapshot.val();
+      if(data !== null){
+        const keys = Object.keys(data);
+        Object.values(data).map((item,index)=>{
+          newData.push({...item,id:keys[index]})
+        })
+      }
+    });
+    return newData;
   }
+ 
   const submitForm=()=>{
-    fetchData();
+    props.fetchData();
     ctx.closeForm();
   }
   useEffect(()=>{
-      console.log("UseEffect run");
-      fetchData()
+    setPlantData(fetchData("Plants"));
   },[])
-  const tableColumn=[
-    {"title":"Name","field":"name"},
-    {"title":"Address","field":"address"},
-    {"title":"GSTN No","field":"GSTN"},
-    {"title":"SAC Code","field":"SAC"}
-    ];
+  
+
+    const columns = useMemo(
+      () => [
+        {
+          accessorKey: 'name', //access nested data with dot notation
+          header: 'Name',
+        },
+        {
+          accessorKey: 'address',
+          header: 'Address',
+        },
+        {
+          accessorKey: 'GSTN', //normal accessorKey
+          header: 'GSTN No',
+        },
+        {
+          accessorKey: 'SAC',
+          header: 'SAC Code',
+        }
+      ],
+      [],
+    );
+    
   
   return (
     <Fragment>
@@ -46,7 +69,8 @@ const PlantContainer = () => {
           <button>Search</button>
         </div>
         <div>
-            <Table data={plantData} columns={tableColumn}/>
+            {/* <Table data={props.plants} columns={tableColumn}/> */}
+            <TableNew data={plantData} columns={columns} coll="Plants"/>
         </div>
       </div>
 }

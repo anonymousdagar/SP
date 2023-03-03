@@ -1,56 +1,65 @@
-import { Fragment, useContext, useEffect, useState } from "react";
+import { Fragment, useContext, useEffect, useState, useMemo } from "react";
 import AuthContext from "../../../../Utils/AuthContext";
 import LocationForm from "../../../Forms/Location/LocationForm";
-import Table from "../../../TableComponent/TableComponent";
+import TableNew from "../../../TableComponent/TableComponent";
+import { set,ref, onValue } from "firebase/database";
+import { db } from "../../../../Utils/firebase"; 
+
 
 const RateChartContainer = () => {
+  // console.log("ratechartprops :",props);
+  const [rc,setRc]=useState([]);
   const ctx =useContext(AuthContext);
-  const [rateChartData,setRateChartData]=useState([]);
-  const fetchData = async () => {
-    const response = await fetch(
-      "https://sptransport-9abec-default-rtdb.asia-southeast1.firebasedatabase.app/RateChart.json"
-    );
-    const json = await response.json();
-    const values = Object.values(json);
-    const keys = Object.keys(json);
-    const newData = values.map((value,index) => {return{...value,id:keys[index]}})
-    setRateChartData(newData);
-  }
-  const submitForm=()=>{
-    fetchData();
-    ctx.closeForm();
+  const fetchData=(collection)=>{
+    const newData=[];
+    onValue(ref(db,collection),snapshot=>{
+      const data = snapshot.val();
+      if(data !== null){
+        const keys = Object.keys(data);
+        Object.values(data).map((item,index)=>{
+          newData.push({...item,id:keys[index]})
+        })
+      }
+    });
+    return newData;
   }
   useEffect(()=>{
-      console.log("UseEffect run");
-      fetchData()
+    setRc(fetchData("RateChart"));
+    console.log("useeffetc runiing");
   },[])
-  const tableColumn=[
-    {"title":"From","field":"from"},
-    {"title":"To","field":"to"},
-    {"title":"Distance","field":"distance"},
-    {"title":"Price","field":"price"}
-  ];
+
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: 'from', //access nested data with dot notation
+        header: 'From',
+      },
+      {
+        accessorKey: 'to',
+        header: 'To',
+      },
+      {
+        accessorKey: 'distance', //normal accessorKey
+        header: 'Distance',
+      },
+      {
+        accessorKey: 'price',
+        header: 'Amount',
+      }
+    ],
+    [],
+  );
   
   
   return (
     <Fragment>
        <div className="content-box">
-       {ctx.showForm ? <LocationForm closeForm={ctx.closeForm} submitForm={submitForm}/> : 
+       {/* {ctx.showForm ? <LocationForm closeForm={ctx.closeForm} submitForm={submitForm}/> :  */}
       <div className="content-wraper">
         <div className="content-header">
-          <h4>Rate Chart</h4>
-          <button onClick={ctx.openForm}>Create New Entry</button>
-        </div>
-        <div>
-          <label>Filer</label>
-          <input></input>
-          <button>Search</button>
-        </div>
-        <div>
-            <Table data={rateChartData} columns={tableColumn}/>
-        </div>
+            <TableNew columns={columns} data={rc} coll="RateChart"/>
+       </div>
       </div>
-}
     </div>
 
     </Fragment>    
